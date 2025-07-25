@@ -1,91 +1,136 @@
 # NapsterP2P
 
-Implementação de um compartilhador de arquivos utilizando **sockets**, baseado no comportamento do **Napster**, conforme especificação da disciplina **Sistema Distribuído- 2025.1**.
-
-## Descrição
-
-O sistema segue um modelo **P2P** com servidor central para indexação:
-- **Servidor**: mantém em memória a lista de usuários online e os arquivos que estão compartilhando.
-- **Clientes**: enviam seus arquivos públicos ao servidor, pesquisam arquivos disponíveis e realizam downloads diretamente de outros clientes.
-
-### Protocolo implementado
-- **Cliente → Servidor**
-  - `JOIN {IP-ADDRESS}`
-  - `CREATEFILE {FILENAME} {SIZE}`
-  - `DELETEFILE {FILENAME}`
-  - `SEARCH {PATTERN}`
-  - `LEAVE`
-- **Servidor → Cliente**
-  - `CONFIRMJOIN`
-  - `CONFIRMCREATEFILE {FILENAME}`
-  - `CONFIRMDELETEFILE {FILENAME}`
-  - `CONFIRMLEAVE`
-  - `FILE {FILENAME} {IP-ADDRESS} {SIZE}`
-- **Cliente → Cliente**
-  - `GET {FILENAME} {OFFSET START} [OFFSET END]`
+Projeto acadêmico: Implementação de um **compartilhador de arquivos P2P** baseado no funcionamento do **Napster** utilizando **sockets** em Python.  
+Desenvolvido para a disciplina **Sistema Distribuído - 2025.1**.
 
 ---
 
-## Estrutura de Pastas
+## 📖 Descrição do Sistema
+
+O projeto segue uma arquitetura **P2P assistida por servidor central**:
+- **Servidor (porta 1234)**: mantém em memória todos os clientes conectados e os arquivos que compartilham.
+- **Clientes (porta 1235)**:
+  - Enviam suas informações e arquivos públicos ao servidor (`JOIN` e `CREATEFILE`).
+  - Realizam buscas (`SEARCH`) e recebem a lista de arquivos disponíveis.
+  - Baixam arquivos diretamente de outros clientes (`GET`).
+
+O sistema segue **estritamente o protocolo especificado** na atividade, garantindo compatibilidade e simplicidade.
+
+---
+
+## 📂 Estrutura do Projeto
 
 ```
 NapsterP2P/
-├── server.py        # Servidor central (porta 1234)
-├── client.py        # Cliente P2P (porta 1235)
-├── public/          # Pasta de arquivos compartilhados
-└── downloads/       # Pasta onde os downloads são salvos
+├── server.py        # Servidor central - gerenciamento de clientes e arquivos
+├── client.py        # Cliente P2P - envia arquivos, busca e realiza downloads
+├── public/          # Pasta com arquivos que serão compartilhados
+└── downloads/       # Pasta onde arquivos baixados serão salvos
 ```
+
+- **public/**: coloque aqui os arquivos que deseja compartilhar.
+- **downloads/**: será criada automaticamente ao baixar arquivos.
 
 ---
 
-## Como executar
+## 🚀 Como Executar
 
-### 1. Preparar ambiente
-Certifique-se de ter **Python 3** instalado.  
-Crie as pastas `public` e `downloads` (se não existirem):
+### Pré-requisitos
+- Python 3.x instalado
+- Sistema operacional compatível (Linux, Windows ou macOS)
 
-```bash
-mkdir -p public downloads
-```
+### Passos:
 
-Coloque alguns arquivos na pasta `public/` para compartilhar.
+1. **Criar as pastas necessárias**
+   ```bash
+   mkdir -p public downloads
+   ```
 
-### 2. Rodar o servidor
-Em um terminal:
+2. **Executar o servidor**
+   ```bash
+   python3 server.py
+   ```
+   O servidor ficará escutando na porta **1234**.
 
-```bash
-python3 server.py
-```
+3. **Executar um cliente**
+   ```bash
+   python3 client.py
+   ```
+   - Envia automaticamente:
+     - `JOIN {IP-ADDRESS}`
+     - `CREATEFILE {FILENAME} {SIZE}` para todos arquivos em `public/`.
+   - Abre um menu interativo para buscas e downloads.
 
-O servidor começará a escutar na porta **1234**.
-
-### 3. Rodar um cliente
-Em outro terminal:
-
-```bash
-python3 client.py
-```
-
-O cliente:
-- envia `JOIN {IP}` ao servidor,
-- compartilha todos os arquivos em `public/` via `CREATEFILE`,
-- inicia um **menu interativo** para buscar, baixar arquivos e sair.
-
-### 4. Rodar múltiplos clientes
-Abra mais terminais e execute `client.py` novamente para simular outros usuários.
+4. **Adicionar mais clientes**
+   - Execute `python3 client.py` em outras janelas de terminal para simular usuários adicionais.
 
 ---
 
-## Como usar o menu
+## 🧭 Menu Interativo do Cliente
 
-1. **Buscar arquivo** – digite parte do nome (`SEARCH {PATTERN}`).
-2. **Escolher arquivo para download** – o cliente mostra uma lista numerada dos arquivos encontrados.
-3. **Baixar arquivo** – escolha pelo número; o arquivo será salvo em `downloads/`.
-4. **Sair** – desconecta do servidor (`LEAVE`).
+1. **Buscar arquivo**
+   - Digite parte do nome.  
+   - Exemplo: `.mp3` → retorna todos arquivos com `.mp3` no nome.
+
+2. **Baixar arquivo**
+   - O sistema exibe uma lista numerada dos resultados da busca.
+   - Escolha o número do arquivo para baixar.  
+   - O arquivo será salvo em `downloads/`.
+
+3. **Sair**
+   - Envia `LEAVE` ao servidor, removendo o cliente da lista.
 
 ---
 
-## Observações
-- Cada cliente escuta na porta **1235** para enviar arquivos diretamente a outros clientes.
-- Ao encerrar o cliente, o servidor remove o IP e arquivos associados da lista.
-- O sistema segue estritamente o protocolo especificado.
+## 📡 Protocolo Implementado
+
+### Cliente → Servidor
+- `JOIN {IP-ADDRESS}`
+- `CREATEFILE {FILENAME} {SIZE}`
+- `DELETEFILE {FILENAME}`
+- `SEARCH {PATTERN}`
+- `LEAVE`
+
+### Servidor → Cliente
+- `CONFIRMJOIN`
+- `CONFIRMCREATEFILE {FILENAME}`
+- `CONFIRMDELETEFILE {FILENAME}`
+- `CONFIRMLEAVE`
+- `FILE {FILENAME} {IP-ADDRESS} {SIZE}`
+
+### Cliente → Cliente
+- `GET {FILENAME} {OFFSET START} [OFFSET END]`
+
+---
+
+## 📝 Observações Importantes
+- Certifique-se de que cada cliente esteja rodando em uma porta 1235 livre.
+- Para encerrar o servidor, use `Ctrl + C` no terminal onde ele está rodando.
+- Arquivos baixados mantêm o nome original do arquivo compartilhado.
+- Em caso de conflito de portas, finalize processos que estejam ocupando-as:
+  ```bash
+  sudo fuser -k 1234/tcp
+  sudo fuser -k 1235/tcp
+  ```
+
+---
+
+## 📌 Próximos Passos
+1. **Versionar o projeto**
+   ```bash
+   git init
+   git add .
+   git commit -m "Implementação inicial NapsterP2P"
+   ```
+
+2. **Criar repositório no GitHub** e conectar:
+   ```bash
+   git branch -M main
+   git remote add origin https://github.com/seu-usuario/NapsterP2P.git
+   git push -u origin main
+   ```
+
+---
+
+**Autor**: Matheus G.  
+**Disciplina**: Programação para Web II – 2025.1
