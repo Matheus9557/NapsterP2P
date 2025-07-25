@@ -131,6 +131,3 @@ NapsterP2P/
    ```
 
 ---
-
-**Autor**: Matheus G.  
-**Disciplina**: Programação para Web II – 2025.1
